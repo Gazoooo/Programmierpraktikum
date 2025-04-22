@@ -1,0 +1,42 @@
+------------------------GENERAL-------------------------------------
+Die Datei 'simulation.html' stellt eine Simulation des Arduino-Projekts im Rahmen des Programmierpraktikums 'Computergafik' dar.
+Kern der Simulation ist das Whiteboard, wo drauf gezeichnet wird.
+
+----------------------------GUI ELEMENTE-------------------
+Die GUI ist in 4 Abschnitte gelgliedert: 
+	1. Simulation: Hier lassen sich generelle Optionen die Simulation betreffend einstellen
+		1.1. Buttons Start/Stopp/Reset
+		1.2. Versteck Seile & Stift
+		1.3. Versteck Koordinatensystem
+		1.4. Stop on errors -> Wenn aus (default), stoppt die Simulation wenn ein Fehler auftritt (Außerhalb des Whiteboards, ...) 
+		1.5. Adjust Speed -> Steuern der Zeichengeschwindigkeit (Zahl stellt nur ca. den Faktor dar)
+	2. Variablen: Hier lassen sich vers. Variablen anpassen
+		2.1. Diameter Coil -> Spulenumfang; Je höher, desto größer ist die Zeichnung
+		2.3. CanvasDimensions: Einstellen des Canvas
+		2.4. DrawAreaDimensions: Einstellen der DrawArea auf dem Canvas (grün)
+		2.5. Startpunkt -> Einstellen des Startpunkts
+	3. Angles-Config: Hier lassen sich die Winkelsequenzen, welche gezeichnet werden sollen, einstellen
+		3.1. Pre-build 1: Dreieck (mit 8mm Diameter)
+		3.2. Pre-build 2: bounding box (mit 8mm Diameter)
+		3.3. File input: Custom, indem man eine .txt mit den Winkelsequenzen hochlädt (Format s.u.)
+	4. Logs:
+		4.1. AnglesNum: Anzeige, welche Winkelsequenz gerade abgearbeitet wird
+		4.2. Error: Zeigt an, falls Fehler auftreten
+		
+		
+		
+---------------HOTKEYS-------------------------------
+- Space -> Pause/Resume runnnig Animation
+- a/d -> lower/higher Animation speed
+- w/s -> set animSpeed to max/min
+- Escape -> reset
+		
+------------------FORMAT .TXT----------------------
+1. Zeile: Von Startpunkt zu Anfang der Zeichnung
+2. Zeile: Von Ende der Zeichnung zum Startpunkt
+3. Zeile bis Ende: [Zeit (ms), WinkelA (Grad), WinkelB (Grad)]
+
+------------------------SONSTIGES-------------------------------
+In der Konsole steht am Ende jeder Zeichnung eine Übersicht mit der benötigtzen Zeit, wichtrigen Koordinaten und dem Fehler (Distanz zw. Anfang und Endpunkt)
+		
+	
