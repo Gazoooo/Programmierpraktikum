@@ -39,4 +39,5 @@ env/
 # OS Specific Files
 # ==========================
 .DS_Store                
-Thumbs.db                
+Thumbs.db      
+desktop.ini          
