@@ -235,7 +235,16 @@
     let endTime; //endtime of each run
     let acc_sleep = 0; //acculumated sleepTime
 
-    // calculates the endpoint from two lines by usig pythagoras
+    /**
+    * Calculates the endpoint from two lines using the Pythagorean theorem.
+    *
+    * @param {number} s1 - Length from motor A to the endpoint.
+    * @param {number} s2 - Length from motor B to the endpoint.
+    * @returns {[number, number]} The [x, y] coordinates of the calculated endpoint.
+    *
+    * @throws Will call handleError with a warning if the point is outside the drawing area.
+    * @throws Will call handleError with an error if the point is completely out of canvas bounds.
+    */
     function calculateEndPoint(s1, s2) {
         c_x = (Math.pow(s1, 2) - Math.pow(s2, 2) + Math.pow(coords_motor_B[0], 2)) / (2 * coords_motor_B[0]);
         c_y = Math.sqrt(Math.pow(s2, 2) - Math.pow((coords_motor_B[0] -c_x), 2))
@@ -251,17 +260,23 @@
         return [c_x, c_y];
     }
     
-    // gets length of a line depending of the Umdrehungswinkel des Motors
-    // angle is degree
+    /**
+    * Calculates the length of a line based on the rotation angle of the motor.
+    *
+    * @param {number} angle - The rotation angle of the motor in degrees.
+    * @param {number} cur_length - The current length of the line.
+    * @returns {number} The new length of the line after applying the rotation.
+    */
     function calc_length(angle, cur_length) {
         let extraLength = angle / 360 * U_COIL;
         return cur_length + extraLength;
     }
 
-    //draws the grid with labels and draw Area
-    //origin is (0,0) 
+    /** Draws the grid and axes on the canvas.
+    * The grid is drawn with a specified spacing, and the axes are labeled with coordinates.
+    * The drawing area is highlighted in green.
+    */
     function drawGrid() {
-
         //draw Axes
         grid_ctx.strokeStyle = "black";
         grid_ctx.lineWidth = 1;
@@ -319,7 +334,13 @@
         grid_ctx.strokeRect(OFFSET_X, OFFSET_Y, WIDTH_DRAWINGAREA, HEIGHT_DRAWINGAREA);
     }
 
-    //draw Lines
+    /** Draws the foreground elements on the canvas.
+    * This includes the lines from the motors to the pen and the pen itself.
+    * The lines are drawn in blue, and the pen is drawn in red.
+    * The function takes the current coordinates of the pen as parameters.
+    * @param {number} c_x - The x-coordinate of the pen.
+    * @param {number} c_y - The y-coordinate of the pen.
+    */
     function drawForeground(c_x, c_y) {
         fg_ctx.clearRect(0, 0, CANVASWIDTH, CANVASHEIGHT);
         if(hide_fg_checkbox.checked) {
@@ -347,28 +368,71 @@
         fg_ctx.stroke();
     }
 
-    //pixel drawed by pen
+    /** Draws the background elements on the canvas.
+    * This includes the lines from the motors to the pen and the pen itself.
+    * The lines are drawn in blue, and the pen is drawn in red.
+    * The function takes the current coordinates of the pen as parameters.
+    * @param {number} c_x - The x-coordinate of the pen.
+    * @param {number} c_y - The y-coordinate of the pen.
+    * @param {string} color - The color to fill the background with.
+    */
     function drawBackground(c_x, c_y, color='grey') {
         //pixels.push({c_x, c_y});
         bg_ctx.fillStyle = color;
         bg_ctx.fillRect(c_x, c_y, 1, 1);
     }
 
-    //turn motor A if angle negativ return shorter length
-    //both motors turn in the same direction
+    /**
+    * Simulates turning motor A and calculates the resulting line length.
+    *
+    * If the angle is negative, it shortens the line (rewinding the motor).
+    * Both motors are assumed to turn in the same direction.
+    *
+    * @param {number} length - The current length of the line.
+    * @param {number} angle_step_size - The amount of rotation to apply (in degrees).
+    * @param {boolean} a_is_negativ - Whether the motor should turn in the negative direction.
+    * @returns {number} The new length of the line after turning the motor.
+    */
     function turn_A(length, angle_step_size, a_is_negativ) {
         angle_step_size = a_is_negativ ? (-Math.abs(angle_step_size)) : Math.abs(angle_step_size); 
         return calc_length(angle_step_size, length);
     }
     
-    //turn motor B if angle negativ return shorter length
+    /**
+    * Simulates turning motor B and calculates the resulting line length.
+    *
+    * If the angle is negative, it shortens the line (rewinding the motor).
+    * Both motors are assumed to turn in the same direction.
+    *
+    * @param {number} length - The current length of the line.
+    * @param {number} angle_step_size - The amount of rotation to apply (in degrees).
+    * @param {boolean} b_is_negativ - Whether the motor should turn in the negative direction.
+    * @returns {number} The new length of the line after turning the motor.
+    */
     function turn_B(length, angle_step_size, b_is_negativ) {
         angle_step_size = b_is_negativ ? (-Math.abs(angle_step_size)) : Math.abs(angle_step_size);
         return calc_length(angle_step_size, length);
     }
 
-    //helper method for operateMotors()
-    //calcs and returns used values
+    /**
+    * Helper function for `operateMotors()` to calculate control parameters
+    * based on the current angles of motor A and B.
+    *
+    * Calculates which angle is smaller, whether the angles are negative or positive,
+    * and how many steps each motor should take. Also prepares values for error correction.
+    *
+    * @param {number} angleA - The rotation angle of motor A in degrees.
+    * @param {number} angleB - The rotation angle of motor B in degrees.
+    * @returns {[boolean, boolean, boolean, number, number, number, number]} 
+    * Returns a tuple with:
+    *  - `a_is_smaller`: `true` if angleA is smaller or equal to angleB,
+    *  - `a_is_negativ`: `true` if angleA is negative,
+    *  - `b_is_negativ`: `true` if angleB is negative,
+    *  - `stepAmount_smaller_angle`: number of steps for the smaller angle,
+    *  - `frac_remaining_step`: fractional part of the extra steps,
+    *  - `extra_steps`: how often the larger motor must step compared to the smaller one,
+    *  - `remainder`: unused step portion, currently `0`.
+    */
     function calcParameters(angleA, angleB) {
         //determines
         //smaller and greater angle
@@ -435,8 +499,23 @@
         return [a_is_smaller, a_is_negativ, b_is_negativ, stepAmount_smaller_angle, frac_remaining_step, extra_steps, remainder];
     }
     
-    //main method: performs drawing
-    //has 2 for loops: 1. for turning smaller angle; 2. for turning bigger angle
+    /**
+    * Main method that performs the drawing by controlling the motors.
+    * 
+    * This function operates two motors, one for the smaller angle and the other for the larger angle.
+    * It has two main loops:
+    * 1. For turning the motor with the smaller angle.
+    * 2. For turning the motor with the larger angle.
+    * 
+    * The function calculates the movement step size based on the angles, controls the motors in steps,
+    * and manages pause, restart, and timing issues to ensure smooth animation.
+    *
+    * @param {number} timeInterval - The total time allocated for one complete drawing cycle.
+    * @param {number} angleA - The rotation angle of motor A in degrees.
+    * @param {number} angleB - The rotation angle of motor B in degrees.
+    * @param {string} color - The color to be used for drawing the background of the canvas.
+    * @returns {Promise<void>} Returns a promise that resolves when the operation is complete.
+    */
     async function operateMotors(timeInterval, angleA, angleB, color) {
         [a_is_smaller, a_is_negativ, b_is_negativ, stepAmount_smaller_angle, frac_remaining_step, extra_steps, remainder] = calcParameters(angleA, angleB);
         if (stepAmount_smaller_angle == 0) {
@@ -511,7 +590,20 @@
         }    
     }
 
-    //angle_sequence: a tupel containing sequenc(es); for start/end, the tupel only contains 1 ele
+    /**
+    * Updates the motor operation based on the provided angle sequence.
+    * 
+    * This function takes a sequence of angles and corresponding time intervals, and operates the motors accordingly.
+    * It updates the motor drawing iteratively and ensures smooth animation by controlling sleep intervals between operations.
+    * It also prevents overlapping calls and handles browser performance by adding occasional pauses.
+    *
+    * @param {Array<Array<number>>} angle_sequence - A sequence of angle data, where each entry contains a tuple with:
+    *   - `timeInterval` (number): The time allocated for each motor movement.
+    *   - `angleA` (number): The rotation angle for motor A in degrees.
+    *   - `angleB` (number): The rotation angle for motor B in degrees.
+    * @param {string} [draw_bg="grey"] - The background color for drawing. Defaults to "grey".
+    * @returns {Promise<void>} Returns a promise that resolves when the update is complete or stopped.
+    */
     async function update(angle_sequence, draw_bg="grey") {
         for (let i = 0; i < angle_sequence.length; i++) {
             timeInterval = angle_sequence[i][0];
@@ -533,7 +625,16 @@
         }
     }
 
-    //controls Error Handling
+    /**
+    * Handles error messages and controls whether the animation stops on errors.
+    * 
+    * This function updates the error message display and checks if the "stop on error" checkbox is selected.
+    * If enabled, it stops the animation and marks the current iteration as "crashed".
+    * The error message is logged to the `error_logger` element.
+    *
+    * @param {string} msg - The error message to be displayed and logged.
+    * @returns {void} 
+    */
     function handleError(msg) {
         if (stop_on_error_checkbox.checked) {
             cur_iter.textContent += " (crashed)";
@@ -542,12 +643,29 @@
         error_logger.textContent = msg;
     }
 
-    //sleeps given amount of time
+    /**
+    * Pauses execution for a specified amount of time.
+    * 
+    * This function returns a Promise that resolves after the given number of milliseconds, allowing you to pause
+    * the execution of asynchronous code without blocking the thread.
+    *
+    * @param {number} ms - The number of milliseconds to sleep.
+    * @returns {Promise<void>} A Promise that resolves after the specified delay.
+    */
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    //helper function to parse ANGLES from text from .txt files
+    /**
+    * Parses angle data from raw text input (typically from a .txt file).
+    * 
+    * This helper function processes the raw text, splitting it by newlines and commas, trimming unnecessary spaces,
+    * and converting the string values to numbers. It returns an array of tuples, where each tuple represents a set
+    * of angles.
+    *
+    * @param {string} raw_text - The raw text data to be parsed. The text should contain lines with comma-separated values.
+    * @returns {Array<Array<number>>} An array of arrays (tuples), where each inner array contains numbers representing angles.
+    */
     function parse(raw_text) {
         const tupleOfTuples = raw_text
         .split('\n') //split on newline
@@ -557,8 +675,16 @@
         return tupleOfTuples;
     }
 
-    //helper function to pretty print angles tuples
-    //prints first and last print_limit lines and length
+    /**
+    * Pretty prints a limited number of angle tuples, showing the total count and a subset of the tuples.
+    * 
+    * This helper function generates a human-readable string representation of a sequence of angle tuples. 
+    * If the number of tuples exceeds a set limit, only the first and last tuples are shown, with a "..." 
+    * in between to indicate omitted tuples. The total number of tuples is also displayed.
+    *
+    * @param {Array<Array<number>>} tupleOfTuples - An array of tuples, where each tuple contains numbers representing angles.
+    * @returns {string} A formatted string displaying the total count and the selected angle tuples.
+    */
     function pretty_print(tupleOfTuples) {
         let print_limit = 1;
         amount_angleSeqs = tupleOfTuples.length;
@@ -578,7 +704,20 @@
         return pretty_string;
     }
     
-    // Function to check/uncheck the button based on checkbox state
+    /**
+    * Configures the angle data source based on the selected checkbox state.
+    * 
+    * This function checks the state of the checkboxes and enables/disables the file input button accordingly.
+    * Depending on which checkbox is selected (file upload, preload 1, or preload 2), it updates the global 
+    * `ANGLES` array with the appropriate data source and displays a message with the angle information.
+    * The start button is also enabled or disabled based on the configuration.
+    * 
+    * - If the "file_checkbox" is checked, the file input is enabled, and `ANGLES` is cleared.
+    * - If "pre1_checkbox" is checked, `ANGLES` is populated with predefined angles from "PRE1_ANGLES".
+    * - If "pre2_checkbox" is checked, `ANGLES` is populated with predefined angles from "PRE2_ANGLES".
+    * 
+    * @returns {void} This function does not return any value.
+    */
     function config_Angles() {
         if (file_checkbox.checked) {
             fileInput.disabled = false; // enable button
@@ -608,7 +747,19 @@
         }
     }
         
-    // Function to load file content
+    /**
+    * Loads the content of the uploaded file and parses the angle data.
+    * 
+    * This function is triggered when a file is selected for upload. It reads the file using a `FileReader`, 
+    * and if a valid file is present, it parses the content using the `parse` function. The parsed angle 
+    * data is then stored in the global `ANGLES` variable. Additionally, the first two elements are separated 
+    * into `to_drawStart` and `to_begin`, and the remaining angles are stored in `ANGLES`.
+    * It then updates the display with the parsed angle data and enables the start button.
+    * 
+    * If no file is uploaded, a message is shown asking the user to upload a file first.
+    * 
+    * @returns {void} This function does not return any value.
+    */
     function load_File() {
         let file = fileInput.files[0];
         if (!file) {
@@ -627,12 +778,30 @@
         fr.readAsText(file);
     }
 
+    /**
+    * Updates the coil diameter value based on the slider input and recalculates the coil circumference.
+    * 
+    * This function is triggered whenever the slider for the coil diameter (`dcoil_slider`) is changed. 
+    * It updates the text content of `dcoil_value` to display the current value of the slider and stores 
+    * that value in the global variable `D_COIL`. It then calculates the coil circumference (`U_COIL`) 
+    * using the formula `U_COIL = Math.PI * D_COIL`.
+    * 
+    * @returns {void} This function does not return any value.
+    */
     function get_slider_dcoil() {
         dcoil_value.textContent = dcoil_slider.value;
         D_COIL = dcoil_slider.value;
         U_COIL = Math.PI * D_COIL;
     }
 
+    /**
+    * Clears or redraws the foreground canvas based on the checkbox state.
+    * 
+    * If the checkbox is checked, the canvas is cleared. If unchecked, the last endpoint
+    * is calculated and the foreground is redrawn.
+    * 
+    * @returns {void}
+    */
     function hide_fg() {
         if (hide_fg_checkbox.checked) {
             fg_ctx.clearRect(0, 0, CANVASWIDTH, CANVASHEIGHT);
@@ -643,6 +812,13 @@
         }
     }
 
+    /**
+    * Clears or redraws the grid based on the checkbox state.
+    * 
+    * If the checkbox is checked, the grid is cleared. If unchecked, the grid is redrawn.
+    * 
+    * @returns {void}
+    */
     function hide_grid() {
         if (hide_grid_checkbox.checked) {
             grid_ctx.clearRect(0, 0, CANVASWIDTH, CANVASHEIGHT);
@@ -651,6 +827,13 @@
         }
     }
 
+    /**
+    * Sets the starting point and calculates the new lengths for the motors.
+    * 
+    * Retrieves coordinates from input fields, validates the input, and updates motor lengths.
+    * 
+    * @returns {void}
+    */
     function set_startingPoint() {
         starting_point_x = parseFloat(starting_point_x_entry.value);
         starting_point_y = parseFloat(starting_point_y_entry.value);
@@ -666,6 +849,12 @@
         let [c_x, c_y] = calculateEndPoint(lengthA, lengthB);
     }
 
+    /**
+    * Updates the animation speed based on the slider value.
+    * Adjusts speed value and ensures it stays within defined limits.
+    * 
+    * @returns {Promise<void>} Waits for GUI refresh.
+    */
     async function get_slider_speed() {
         acc_sleep = 0; //reset acculumated sleep time
         if (parseFloat(speed_slider.value) > 100) {
@@ -683,6 +872,12 @@
         await sleep(100); //wait for GUI to refresh in case of too speedy
     }
 
+    /**
+    * Resizes the canvas elements based on the input width and height.
+    * Adjusts drawing area and motor coordinates accordingly.
+    * 
+    * @throws {Error} If the input values for width or height are invalid.
+    */
     function resizeCanvas() {
         CANVASWIDTH = parseFloat(width_entry.value);
         CANVASHEIGHT = parseFloat(heigth_entry.value);
@@ -707,6 +902,12 @@
         coords_motor_B = [CANVASWIDTH, 0];
     }
 
+    /**
+    * Resizes the drawing area based on the input width and height.
+    * Adjusts the motor coordinates and calculates new lengths accordingly.
+    * 
+    * @throws {Error} If the input values for width or height are invalid.
+    */
     function resizeDrawingArea() {
         WIDTH_DRAWINGAREA = parseFloat(drawwidth_entry.value); 
         HEIGHT_DRAWINGAREA = parseFloat(drawheight_entry.value); 
@@ -724,6 +925,10 @@
         lengthB = Math.sqrt(Math.pow(CANVASWIDTH-OFFSET_X, 2) + Math.pow(OFFSET_Y, 2));
     }
 
+    /**
+    * Initializes the canvas, resets variables, and sets up the starting point and drawing area.
+    * Clears the previous drawings and prepares for a new iteration.
+    */
     function init() {
         //reset vars
         remainder = 0;
@@ -750,6 +955,10 @@
         hide_grid();
     }
 
+    /**
+    * Starts the drawing process, updates the drawing with the given sequences, and calculates the error.
+    * Disables the start button during execution and logs the time and position details at the end.
+    */
     async function start() {
         reset();
         start_button.disabled = true;
@@ -784,6 +993,10 @@
         start_button.disabled = false;
     }
 
+    /**
+    * Resets the state by stopping the running process, re-enabling the start button and slider,
+    * and reinitializing the canvas and settings.
+    */
     function reset() {
         running = false;
         start_button.disabled = false;
@@ -791,11 +1004,14 @@
         init();
     }
     
+    /**
+    * Toggles the pause state of the process.
+    */
     function resume() {
         pause = !pause;
     }
 
-    // event listeners
+    // --------------------event listeners----------------------
     file_checkbox.addEventListener("change", config_Angles);
     pre1_checkbox.addEventListener("change", config_Angles);
     pre2_checkbox.addEventListener("change", config_Angles);
@@ -805,6 +1021,9 @@
     dcoil_slider.addEventListener('input', get_slider_dcoil);
     speed_slider.addEventListener('input', get_slider_speed);
     
+    /**
+    * Listens for input on the width_entry field and updates canvas dimensions and related values.
+    */
     width_entry.addEventListener('input', function() {
         resizeCanvas();
         //override other corresponding values
@@ -815,6 +1034,9 @@
         init();
     });
 
+    /**
+    * Listens for input on the heigth_entry field and updates canvas dimensions and related values.
+    */
     heigth_entry.addEventListener('input', function() {
         resizeCanvas();
         //override other corresponding values
@@ -825,6 +1047,9 @@
         init();
     });
 
+    /**
+    * Listens for input on the drawwidth_entry field and updates drawing area dimensions and related values.
+    */
     drawwidth_entry.addEventListener('input', function() {
         resizeDrawingArea();
         //override other corresponding values
@@ -833,6 +1058,9 @@
         init();
     });
 
+    /**
+    * Listens for input on the drawheight_entry field and updates drawing area dimensions and related values.
+    */
     drawheight_entry.addEventListener('input', function() {
         resizeDrawingArea();
         //override other corresponding values
@@ -841,15 +1069,29 @@
         init();
     });
 
+    /**
+    * Listens for input on the starting_point_x_entry field and reinitializes.
+    */
     starting_point_x_entry.addEventListener('input', function() {
         init();
     });
 
+    /**
+    * Listens for input on the starting_point_y_entry field and reinitializes.
+    */
     starting_point_y_entry.addEventListener('input', function() {
         init();
     });
 
-    // define functions for keys on keyboard
+    /**
+    * Listens for specific key presses and triggers corresponding actions:
+    * - Space: Pauses or resumes the process.
+    * - 'd': Increases the speed by one step.
+    * - 'a': Decreases the speed by one step.
+    * - 'w': Sets the speed to the maximum value.
+    * - 's': Sets the speed to the minimum value.
+    * - Escape: Resets the process.
+    */
     document.addEventListener("keydown", (event) => {
         switch (event.key) {
             case " ":
@@ -884,7 +1126,12 @@
         }
     });
     
-    //initial things (after DOM has loaded)
+    /**
+    * Initializes the settings after the DOM is loaded:
+    * - Sets default values for checkboxes, sliders, and input fields.
+    * - Configures angles, coil slider, and speed slider.
+    * - Calls the `init` function to initialize the canvas and other elements.
+    */
     document.addEventListener('DOMContentLoaded', () => {
         file_checkbox.checked = true;
         dcoil_slider.value = 16;
