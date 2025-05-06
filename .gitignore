@@ -1,4 +1,12 @@
 # ==========================
+# Project specific
+# ==========================
+.backups/
+.Bericht/
+*gotzen_report.pdf
+*logbuch.txt    
+
+# ==========================
 # VS Code Settings
 # ==========================
 .vscode/                 
