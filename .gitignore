@@ -1,8 +1,8 @@
 # ==========================
 # Project specific
 # ==========================
-.backups/
-.Bericht/
+backups/
+Bericht/
 *gotzen_report.pdf
 *logbuch.txt    
 
