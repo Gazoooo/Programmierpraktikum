@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Canvas Resize</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <input type="number" id="width" placeholder="Width" />
+    <input type="number" id="height" placeholder="Height" />
+    <button id="resizeCanvas">Resize Canvas</button>
+    <canvas id="myCanvas" width="300" height="150"></canvas>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Draw initial content
+        function drawInitial() {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(10, 10, 100, 50);
+        }
+
+        drawInitial();
+
+        // Handle resize
+        document.getElementById('resizeCanvas').addEventListener('click', () => {
+            const width = parseInt(document.getElementById('width').value) || canvas.width;
+            const height = parseInt(document.getElementById('height').value) || canvas.height;
+
+            // Resize the canvas
+            canvas.width = width;
+            canvas.height = height;
+
+            // Redraw the canvas content
+            //drawInitial();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+%%%% Proceedings format for most of ACM conferences and all ICPS volumes.
+\documentclass[acmtog, nonacm,table,ngerman]{acmart}
+
+\citestyle{acmauthoryear}
+\setcitestyle{square,nosort}
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\usepackage{lipsum} % Required to insert dummy text. To be removed otherwise
+\usepackage[ngerman]{babel} % German language support
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE INFORMATION
+%----------------------------------------------------------------------------------------
+
+%----------------------------------------------------------------------------------------
+
+\title{Programmierpraktikum Computergrafik WiSe24/25}
+\author{Gustav Otzen}
+\email{gotzen@uni-osnabrueck.de}
+
+
+%----------------------------------------------------------------------------------------
+%	ACTUAL TEXT
+%----------------------------------------------------------------------------------------
+\begin{document}
+
+\settopmatter{printacmref=false}
+
+%----------------------------------------------------------------------------------------
+%	FIRST PAGE STUFF
+%----------------------------------------------------------------------------------------
+\begin{teaserfigure}
+\includegraphics[width=\linewidth]{images/simulation_view.png}
+\caption{Bild unseres fertigen Simulationsprogrammes}
+\label{fig:teaser}
+\end{teaserfigure}
+
+\maketitle
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\input{chapters/00_einleitung}
+\input{chapters/01_kommunikation}
+\input{chapters/02_gui}
+\input{chapters/03_animation}
+\input{chapters/04_fazit}
+
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+%\bibliographystyle{ACM-Reference-Format}
+%\bibliography{paper}
+
+
+\end{document}
